@@ -62,10 +62,10 @@ namespace FishMMO.Server
 				return;
 			}
 			using var dbContext = Server.NpgsqlDbContextFactory.CreateDbContext();
-			CharacterEntity friendEntity = CharacterService.GetByName(dbContext, msg.characterName);
+			CharacterEntity friendEntity = CharacterService.GetByName(dbContext, msg.characterName, true);
 			if (friendEntity != null)
 			{
-				// are we trying to be our own friend again...
+				// are we trying to become our own friend again...
 				if (friendController.Character.ID == friendEntity.ID)
                 {
 					return;
@@ -73,6 +73,9 @@ namespace FishMMO.Server
 
 				// add the friend to the database
 				CharacterFriendService.Save(dbContext, friendController.Character.ID, friendEntity.ID);
+
+				// add the friend to the characters friend controller
+				friendController.AddFriend(friendEntity.ID);
 
 				// tell the character they added a new friend!
 				Server.Broadcast(conn, new FriendAddBroadcast()
